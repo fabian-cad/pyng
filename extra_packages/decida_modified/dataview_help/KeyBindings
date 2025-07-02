@@ -1,0 +1,18 @@
+
+  dataview help
+  
+  Key Bindings:
+
+   % F: autoscale x and y
+   % [: zoom out
+   % ]: zoom in
+   % s: toggle dots to current curve
+   % S: toggle squares to current curve
+   % Left:  fine pan left
+   % Right: fine pan right
+   % Down:  fine pan down
+   % Up:    fine pan up
+   % Shift-Left:   coarse pan left
+   % Shift-Right:  coarse pan right
+   % Shift-Down>": coarse pan down
+   % Shift-Up>":   coarse pan up
