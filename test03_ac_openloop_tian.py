@@ -17,6 +17,9 @@ netlist = f'''************************************************************
 **** YOU NEED TO INSERT THE CIRCUIT UNDER TEST BELOW *******
 * 1. Use points "a" and "b" to open the loop of your circuit
 * 2. Adjust the frequency range inside the .control 
+* 3. Results of magnitude and phase are saved, respectively,
+*    as "REAL(mag_tian)" [DB] and "REAL(ph_tian)" [DEG]
+*    in the .raw file.
 
 ***************** Begin circuit under test *****************
 .inc ../lm741.lib
