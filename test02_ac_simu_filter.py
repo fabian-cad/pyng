@@ -53,7 +53,7 @@ net_file = open('netlists/'+netlistname+'.sp', "w")
 net_file.write(netlist)
 net_file.close()
 #run ngspice simulation
-sim.cleanresults(netlistname,ngspice_bin_path) # clean preview results
+sim.cleanresults(netlistname) # clean preview results
 sim.run(netlistname,ngspice_bin_path) # run simulation
 d = Data() 
 rawname = "results/"+netlistname+".raw" # name of .raw file

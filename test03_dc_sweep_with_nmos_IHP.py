@@ -1,43 +1,43 @@
-import libs_simu as sim
+﻿import libs_simu as sim
 import matplotlib.pyplot as plt
 import numpy as np
 import os
 from extra_packages.decida_modified.Data import Data
 
-#Ngspice instalation path (Windows)
-#ngspice_bin_path = 'C:/ngspice-44.2/Spice64/bin'
-#Ngspice instalation path (Linux)
-ngspice_bin_path = '/tools/cad/ngspice-44.2/src'
+# Ngspice instalation path. If it is not installed, follow the Step 2.5 from tutorial
+# https://github.com/fabian-cad/ihp_sg13g2/blob/main/README.md
+ngspice_bin_path = '/usr/local/bin'
 
-#Sky130 library path
-sky130_path = '/tools/cad/sky130/combined_models'
+# IHP PDK environment variables (defined before open Visual Code)
+# if not, clone the repository of the pdk from:
+# https://github.com/IHP-GmbH/IHP-Open-PDK.git
+pdk_root = os.getenv("PDK_ROOT")
+pdk = os.getenv("PDK")
+pdk_models = f'{pdk_root}/{pdk}/libs.tech/ngspice/models'
 
 netlist = f'''********************************************
 *** Current DC sweep using a MOS device  ***
 ********************************************
+** IHP 130 nm library **
+.lib {pdk_models}/cornerMOSlv.lib mos_tt
 
-** SKY130 CMOS library **
-.lib {sky130_path}/sky130.lib.spice tt
+** Sources
+Vdd D1 0 dc=1.2
+Vgs G1 0 dc=0.5
 
-** Descrição de circuito 
-V1 DD 0 dc=1.8
-I1 DD G1 dc=1u
+** Devices
+Xn1 D1 G1 0 0 sg13_lv_nmos w=2u l=1u m=1
 
-** Chamada ao transistor nmoslvt da tecnologia sky130
-Xn1 G1 G1 0 0 sky130_fd_pr__nfet_01v8_lvt 
-+ w=5 l=5 m=1 mult=1 nf=1
-+ ad='w*0.29' as='w*0.29' pd='2*w+2*0.29' ps='2*w+2*0.29'
+** Analysis
+.dc Vgs 0 1.2 0.01
 
-** Exemplo de análise DC em decadas de corrente
-** .dc <fonte> <valor_i> <valor_f> <passo>  
-.dc I1 10e-9 10e-6 10e-9
+** Save drain current
+.save i(Vdd)
 
-** Somente salvar os valores necessários  
-.save v(G1)
-
-** Opções do simulador, temperatura e formato do .raw
+** Simulator options
 .option temp=27 filetype=ascii 
-.end'''
+.end
+'''
 
 ################ Ngspice simulation (DO NOT MODIFY) ##################
 ######################################################################
@@ -61,16 +61,14 @@ d.read_nutmeg(rawname) # get data from .raw in "Data" type variable
 
 ############# Load signals in Python variables #######################
 print(d._data_col_names) # show in terminal all the stored signals
-Input = sim.getDataSignal(d,'i(i-sweep)','ngspice')
-Output = sim.getDataSignal(d,'v(g1)','ngspice')
+Vgs = sim.getDataSignal(d,'v(v-sweep)','ngspice')
+Id = -sim.getDataSignal(d,'i(vdd)','ngspice')
 
 ############# Example of plotting results using matplotlib ###########
 plt.figure(figsize=(8, 4))
-plt.semilogx(Input*1e6,Output*1e3) 
-plt.ylabel('Vg1 (mV)')
-plt.xlabel('I1 (uA)')
-plt.title('Drain current DC sweep')
-#plt.grid(True)
-#plt.legend()
+plt.semilogy(Vgs*1e3,Id*1e6) 
+plt.xlabel('Vgs (mV)')
+plt.ylabel('Id (uA)')
+plt.title('Drain current Vgs sweep')
 plt.tight_layout()
 plt.show()
