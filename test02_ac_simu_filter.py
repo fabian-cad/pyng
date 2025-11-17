@@ -7,10 +7,7 @@ from extra_packages.decida_modified.Data import Data
 #Ngspice instalation path (Windows)
 #ngspice_bin_path = 'C:/ngspice-44.2/Spice64/bin'
 #Ngspice instalation path (Linux)
-ngspice_bin_path = '/tools/cad/ngspice-44.2/src'
-
-#Sky130 library path
-sky130_path = '/tools/cad/sky130/combined_models'
+ngspice_bin_path = '/usr/local/bin'
 
 netlist = f'''********************************************
 *** AC ellipic filter teste  ***
