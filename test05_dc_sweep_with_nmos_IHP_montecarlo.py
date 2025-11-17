@@ -1,4 +1,4 @@
-﻿import libs_simu as sim
+import libs_simu as sim
 import matplotlib.pyplot as plt
 import numpy as np
 import os
@@ -72,8 +72,7 @@ for i in range(monte):
 
 ############# Load signals in Python variables #######################
 #print(d._data_col_names) # show in terminal all the stored signals
-Vgs = []
-Id = []
+Vgs = []; Id = []
 for i in range(monte):
     Vgs.append(sim.getDataSignal(raws[i],'v(v-sweep)','ngspice'))
     Id.append(-sim.getDataSignal(raws[i],'i(vdd)','ngspice'))
