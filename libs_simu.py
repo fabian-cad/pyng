@@ -10,11 +10,14 @@ def run(netlistname="netlist",dir=''):
         os_name = 'Linux'
     else:
         os_name = False
+        print('PYNG ERROR: No operational system found by platform.system().')
     application_path = '.'
     if glob.glob(dir+"/hspice*") != []:
         simulator ='hspice'
     elif glob.glob(dir+"/ngspice*") != []:
         simulator ='ngspice'
+    else:
+        print('PYNG ERROR: Please, check the simulator path.')
     # remove all result files with the name "netlistname"
     if os_name == 'Windows':
         remove = 'DEL /F /S /Q /A "{0}\\results\\{1}*"'.format(application_path,netlistname)
@@ -30,7 +33,7 @@ def run(netlistname="netlist",dir=''):
         command = "{0} -i {1} -o {2}".format(dir+'/hspice',input,output)
     if simulator == 'ngspice':
         command = "{0} -b -r {1}.raw -o {1}.txt {2}".format(dir+'/ngspice',output,input)
-        print(command)
+        #print(command)
     try: 
         if os_name == 'Windows':
             os.system(command+' > nul')
@@ -41,7 +44,7 @@ def run(netlistname="netlist",dir=''):
         return
     return simulator
 
-def cleanresults(netlistname="netlist",dir=''):
+def cleanresults(netlistname="netlist"):
     if (platform.system() == 'Windows'):
         os_name = 'Windows'
     elif (platform.system() == 'Linux'):
@@ -54,7 +57,7 @@ def cleanresults(netlistname="netlist",dir=''):
         remove = 'DEL /F /S /Q /A "{0}\\results\\{1}*"'.format(application_path,netlistname)
         os.system(remove+' > nul')
     elif os_name == 'Linux':
-        os.system('rm -rf {0}\\results\\{1}*'.format(application_path,netlistname))
+        os.system(f'rm -r {application_path}/results/{netlistname}*')
 
 def getDataNames(data):
     names = []
@@ -151,3 +154,43 @@ def fix_raw(rawname):
             a_file = open(rawname, "w")
             a_file.writelines(list_of_lines)
             a_file.close()
+
+
+def monte_ng_control(netlistname,analysis,monte):
+    return f'''
+* *******************************************************
+* Perform Monte Carlo simulation in ngspice
+* edit 'setcs sourcepath' for your path to circuit file
+* *******************************************************
+.options seed=random
+.control
+    let mc_runs = {monte}  $ number of runs for monte carlo
+    let run = 1             $ number of the actual run
+    define gauss(nom, var, sig) (nom + (nom*var)/sig * sgauss(0))
+    define agauss(nom, avar, sig) (nom + avar/sig * sgauss(0))
+
+    * run the simulation loop
+    dowhile run <= mc_runs
+        * without the reset switch there is some strange drift
+        * towards lower and lower frequencies
+        set run = $&run               $ create a variable from the vector
+        *setseed $run                  $ set the rnd seed value to the loop index
+
+        if run = 1
+            source $inputdir/../netlists/{netlistname}.sp        $ load the circuit once from file, including model data
+        else
+            mc_source                  $ re-load the circuit from internal storage
+        end
+
+        ******** Analysis *********
+        {analysis}
+        
+        write $inputdir/../results/{netlistname}_{{$run}}.raw     $ write each sim output to its own rawfile
+
+        destroy all                   $ delete all output vectors
+        let run = run + 1             $ increase loop counter
+    end
+    quit
+.endc
+.end
+'''
