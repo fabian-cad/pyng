@@ -21,7 +21,7 @@ corner = 'tt'
 analysis='dc Vgs 0.2 1.2 0.01'
 
 # Circuit netlist
-netlist = f'''********************************************
+netlist = f'''******************************
 *** Current DC sweep using a MOS device  ***
 ********************************************
 ** IHP 130 nm library **
@@ -78,11 +78,30 @@ for i in range(monte):
     Id.append(-sim.getDataSignal(raws[i],'i(vdd)','ngspice'))
 
 # ############# Example of plotting results using matplotlib ###########
+
+# Plot ID vs Vgs
 plt.figure(figsize=(6, 4))
 for i in range(monte):
-    plt.semilogy(Vgs[i]*1e3,Id[i]*1e6) 
+    plt.semilogy(Vgs[i]*1e3,Id[i]*1e6)
 plt.xlabel('Vgs (mV)')
 plt.ylabel('Id (uA)')
 plt.title('NMOS drain current vs Vgs')
+
+# Plot Histogram at Vgs_0 = 0.4
+Vgs_0 = 0.4
+Id_400mV = np.zeros(monte)
+for i in range(monte):
+    idx = np.argmax(Vgs[i] >= Vgs_0)
+    Id_400mV[i] = Id[i][idx]
+plt.figure(figsize=(6, 4))
+plt.hist(Id_400mV*1e6)
+plt.xlabel('Id (uA)')
+plt.ylabel('Ocurrences')
+plt.title('Id behavior at Vgs = 400 mV')
+
+# Display average and standard deviations
+print("Average "+str(np.mean(Id_400mV*1e6))+" uA")
+print("Standard deviation "+str(np.std(Id_400mV*1e6))+" uA")
+
 plt.tight_layout()
 plt.show()
